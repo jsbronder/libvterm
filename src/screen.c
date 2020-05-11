@@ -89,7 +89,17 @@ static ScreenCell *realloc_buffer(VTermScreen *screen, ScreenCell *buffer, int n
         *new_cell = buffer[row * screen->cols + col];
       else {
         new_cell->chars[0] = 0;
-        new_cell->pen = screen->pen;
+        if (buffer) {
+            int index = screen->cols;
+
+            /* Prefer to trace up and left to find the pen in order so that the
+             * altscreen and primary don't mix pens. */
+            index *= (row < screen->rows ? row : screen->rows - 1);
+            index += (col < screen->cols ? col : screen->cols - 1);
+            new_cell->pen = buffer[index].pen;
+        } else {
+            new_cell->pen = screen->pen;
+        }
       }
     }
   }
